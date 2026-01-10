@@ -4,22 +4,17 @@
     "type": "split",
     "children": [
       {
-        "id": "1130d1ce4ddc9918",
+        "id": "f1649cd328bff2a5",
         "type": "tabs",
         "children": [
           {
-            "id": "569fc982e5e30a33",
+            "id": "ab1e9fcd7a329f74",
             "type": "leaf",
             "state": {
-              "type": "markdown",
-              "state": {
-                "file": "ysh_223/HW/JTAG.md",
-                "mode": "source",
-                "source": false,
-                "backlinks": false
-              },
+              "type": "empty",
+              "state": {},
               "icon": "lucide-file",
-              "title": "JTAG"
+              "title": "새 탭"
             }
           }
         ]
@@ -192,16 +187,27 @@
       "obsidian-git:Open Git source control": false
     }
   },
-  "active": "569fc982e5e30a33",
+  "active": "ab1e9fcd7a329f74",
   "lastOpenFiles": [
-    "ysh_223/Protocol/OTA.md",
+    "ysh_223/Linux & kernel/process status.md",
+    "ysh_223/Linux & kernel/fork() & exec().md",
+    "ysh_223/Linux & kernel/Device Driver.md",
+    "ysh_223/Linux & kernel/Udev Rule.md",
+    "ysh_223/Linux & kernel/Latency.md",
+    "ysh_223/Linux & kernel/리눅스 CFS 스케줄러.md",
+    "ysh_223/Linux & kernel/Linux process.md",
+    "ysh_223/Linux & kernel/메모리 매핑.md",
+    "Tag/Linux & Kernel.md",
+    "ysh_223/Linux & kernel/Linux Command.md",
+    "ysh_223/Linux & kernel",
+    "ysh_223/img/Pasted image 20260110224325.png",
     "ysh_223/HW/JTAG.md",
-    "Pasted image 20260110224325.png",
+    "ysh_223/Protocol/OTA.md",
     "ysh_223/CS/DTS.md",
-    "Pasted image 20260110224235.png",
+    "ysh_223/img/Pasted image 20260110224235.png",
     "ysh_223/Schedule/Mutex & Semaphore.md",
-    "Pasted image 20260110224141.png",
-    "Pasted image 20260110224130.png",
+    "ysh_223/img/Pasted image 20260110224141.png",
+    "ysh_223/img/Pasted image 20260110224130.png",
     "ysh_223/CS/Task & Thraed.md",
     "ysh_223/Schedule",
     "ysh_223/CS",
@@ -219,26 +225,15 @@
     "Tag/STM.md",
     "무제/2026-01-10.md",
     "무제/Todo",
-    "Tag/Linux.md",
     "Tag/Tool.md",
     "ysh_223/Protocol/I2C 부가 정리 (1).md",
     "ysh_223/Protocol/UART 부가 정리 (1).md",
     "ysh_223/Protocol/SPI 부가 정리 (1).md",
     "Tag/Protocol.md",
     "ysh_223/ESP32/ESP32_CJSON_PARSING.md",
-    "ysh_223/RTOS/스케줄링.md",
-    "ysh_223/RTOS/우선순위 역적.md",
-    "ysh_223/RTOS/RTOS 실습.md",
-    "ysh_223/RTOS/RTOS 용어 정리.md",
-    "ysh_223/RTOS/RTOS Release time & Deadline 용어.md",
-    "ysh_223/RTOS/Systick & PendSV.md",
-    "Tag/Scheduling.md",
-    "ysh_223/RTOS/RTOS 구성.md",
-    "ysh_223/RTOS/OS 기본 개념.md",
     "Tag",
     "ysh_223/RTOS",
     "ysh_223/Project",
-    "ysh_223/Flask",
-    "ysh_223/Network"
+    "ysh_223/Flask"
   ]
 }
