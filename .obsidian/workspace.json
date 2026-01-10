@@ -4,22 +4,22 @@
     "type": "split",
     "children": [
       {
-        "id": "5a0be7f3cc7b1097",
+        "id": "157ec4c28e870a5c",
         "type": "tabs",
         "children": [
           {
-            "id": "45777eb41a50b681",
+            "id": "3f0fea57e0e30378",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "ysh_223/RTOS/스케줄링.md",
+                "file": "ysh_223/Protocol/I2C 부가 정리 (1).md",
                 "mode": "source",
                 "source": false,
                 "backlinks": false
               },
               "icon": "lucide-file",
-              "title": "스케줄링"
+              "title": "I2C 부가 정리 (1)"
             }
           }
         ]
@@ -192,21 +192,26 @@
       "obsidian-git:Open Git source control": false
     }
   },
-  "active": "45777eb41a50b681",
+  "active": "3f0fea57e0e30378",
   "lastOpenFiles": [
+    "ysh_223/Protocol/UART 부가 정리 (1).md",
+    "ysh_223/Protocol/I2C 부가 정리 (1).md",
+    "ysh_223/Protocol/SPI 부가 정리 (1).md",
+    "Tag/Protocol.md",
+    "ysh_223/img/Pasted image 20260110220917.png",
+    "ysh_223/ESP32/ESP32_CJSON_PARSING.md",
+    "ysh_223/RTOS/스케줄링.md",
     "ysh_223/RTOS/우선순위 역적.md",
     "ysh_223/RTOS/RTOS 실습.md",
     "ysh_223/RTOS/RTOS 용어 정리.md",
     "ysh_223/RTOS/RTOS Release time & Deadline 용어.md",
     "ysh_223/RTOS/Systick & PendSV.md",
     "Tag/Scheduling.md",
-    "ysh_223/RTOS/스케줄링.md",
-    "Pasted image 20260110221154.png",
-    "Pasted image 20260110221135.png",
-    "Pasted image 20260110221121.png",
-    "Pasted image 20260110221107.png",
+    "ysh_223/img/Pasted image 20260110221154.png",
+    "ysh_223/img/Pasted image 20260110221135.png",
+    "ysh_223/img/Pasted image 20260110221121.png",
+    "ysh_223/img/Pasted image 20260110221107.png",
     "ysh_223/RTOS/RTOS 구성.md",
-    "Pasted image 20260110220917.png",
     "ysh_223/RTOS/OS 기본 개념.md",
     "ysh_223/RTOS/RTOS.md",
     "ysh_223/img/Pasted image 20260110220414.png",
@@ -219,7 +224,6 @@
     "Title/무제.md",
     "ysh_223/img/Pasted image 20260110220121.png",
     "ysh_223/img/Pasted image 20260110203817.png",
-    "Tag/Protocol.md",
     "Tag/Network.md",
     "Tag/Project.md",
     "Tag",
@@ -228,10 +232,6 @@
     "ysh_223/Project/ReadMark.md",
     "ysh_223/Flask/homepage.md",
     "ysh_223/Project",
-    "ysh_223/Flask/라우팅.md",
-    "ysh_223/Flask/Starting Flask.md",
-    "ysh_223/Flask/Flask파일 실행 방법.md",
-    "ysh_223/Flask/Flask start.md",
     "ysh_223/Flask",
     "ysh_223/img/Pasted image 20260110213546.png",
     "ysh_223/Network",
