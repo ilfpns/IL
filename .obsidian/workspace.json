@@ -4,17 +4,22 @@
     "type": "split",
     "children": [
       {
-        "id": "f1649cd328bff2a5",
+        "id": "cca3d893bd2de27a",
         "type": "tabs",
         "children": [
           {
-            "id": "ab1e9fcd7a329f74",
+            "id": "ee6c35c5d397ee50",
             "type": "leaf",
             "state": {
-              "type": "empty",
-              "state": {},
+              "type": "markdown",
+              "state": {
+                "file": "ysh_223/STM/AHB & 인터커넥트.md",
+                "mode": "source",
+                "source": false,
+                "backlinks": false
+              },
               "icon": "lucide-file",
-              "title": "새 탭"
+              "title": "AHB & 인터커넥트"
             }
           }
         ]
@@ -187,8 +192,14 @@
       "obsidian-git:Open Git source control": false
     }
   },
-  "active": "ab1e9fcd7a329f74",
+  "active": "ee6c35c5d397ee50",
   "lastOpenFiles": [
+    "Tag/HW.md",
+    "ysh_223/STM/AHB & 인터커넥트.md",
+    "Tag/ARM.md",
+    "무제/긱뉴스/2026-01-10.md",
+    "무제/2026-01-10.md",
+    "무제/긱뉴스",
     "ysh_223/Linux & kernel/process status.md",
     "ysh_223/Linux & kernel/fork() & exec().md",
     "ysh_223/Linux & kernel/Device Driver.md",
@@ -221,19 +232,13 @@
     "ysh_223/HW/NVIC.md",
     "ysh_223/STM",
     "ysh_223/HW",
-    "Tag/HW.md",
     "Tag/STM.md",
-    "무제/2026-01-10.md",
     "무제/Todo",
     "Tag/Tool.md",
     "ysh_223/Protocol/I2C 부가 정리 (1).md",
     "ysh_223/Protocol/UART 부가 정리 (1).md",
-    "ysh_223/Protocol/SPI 부가 정리 (1).md",
-    "Tag/Protocol.md",
-    "ysh_223/ESP32/ESP32_CJSON_PARSING.md",
     "Tag",
     "ysh_223/RTOS",
-    "ysh_223/Project",
-    "ysh_223/Flask"
+    "ysh_223/Project"
   ]
 }
