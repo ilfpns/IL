@@ -4,41 +4,22 @@
     "type": "split",
     "children": [
       {
-        "id": "fafe8a661382cc75",
+        "id": "29a724472aa38159",
         "type": "tabs",
         "children": [
           {
-            "id": "62a12ad31c8b2c33",
+            "id": "8bbfe7b2f32280c9",
             "type": "leaf",
             "state": {
-              "type": "markdown",
+              "type": "image",
               "state": {
-                "file": "ysh_223/C/C.md",
-                "mode": "source",
-                "source": false,
-                "backlinks": false
+                "file": "ysh_223/img/Pasted image 20260110213307.png"
               },
-              "icon": "lucide-file",
-              "title": "C"
-            }
-          },
-          {
-            "id": "252bce82db1be148",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "ysh_223/C/func templete.md",
-                "mode": "source",
-                "source": false,
-                "backlinks": false
-              },
-              "icon": "lucide-file",
-              "title": "func templete"
+              "icon": "lucide-image",
+              "title": "Pasted image 20260110213307"
             }
           }
-        ],
-        "currentTab": 1
+        ]
       }
     ],
     "direction": "vertical"
@@ -70,7 +51,7 @@
             "state": {
               "type": "search",
               "state": {
-                "query": "tag:#if",
+                "query": "",
                 "matchingCase": false,
                 "explainSearch": false,
                 "collapseAll": false,
@@ -208,46 +189,46 @@
       "obsidian-git:Open Git source control": false
     }
   },
-  "active": "252bce82db1be148",
+  "active": "e3cae631e2b7e5f4",
   "lastOpenFiles": [
+    "ysh_223/ESP32/ESP32-C3 DevkitM-1.md",
+    "ysh_223/img/Pasted image 20260110213307.png",
+    "ysh_223/img/Pasted image 20260110213257.png",
+    "ysh_223/ESP32/ESP32_Websocket_Send_MSG.md",
+    "ysh_223/ESP32/ESP32_GPIO_CONTROLL.md",
+    "ysh_223/ESP32/ESP32_CJSON_PARSING.md",
+    "ysh_223/ESP32/ESP32_HTTP_CLIENT.md",
+    "ysh_223/ESP32/ESP32_CAMERA.md",
+    "ysh_223/ESP32/ESP32_NETWORK.md",
+    "ysh_223/ESP32/ESP32_FLASH.md",
+    "ysh_223/ESP32/ESP32_UART.md",
+    "ysh_223/ESP32/Header.md",
+    "ysh_223/ESP32/ESP32.md",
+    "ysh_223/ESP32/System include.md",
+    "ysh_223/ESP32/double-quote include.md",
+    "ysh_223/C/C.md",
+    "ysh_223/C/Volatile.md",
+    "ysh_223/ESP32",
+    "ysh_223/C/func templete.md",
     "무제/2026-01-10.md",
     "ysh_223/C/메모리 영역.md",
     "ysh_223/C/snprintf.md",
     "ysh_223/C/캐스팅.md",
     "ysh_223/C/구조체 메모리 패딩.md",
-    "ysh_223/C/C.md",
     "ysh_223/C/전처리기 조건부 컴파일.md",
     "ysh_223/C/참조자.md",
     "ysh_223/C/유용한 C++.md",
     "ysh_223/C/New malloc.md",
-    "ysh_223/C/Void Pointer.md",
-    "ysh_223/C/Float.md",
-    "ysh_223/C/func templete.md",
-    "ysh_223/Protocol/Protocol.md",
     "ysh_223/C",
     "무제",
     "ysh_223/img/Pasted image 20260110205208.png",
-    "ysh_223/Protocol/Bluetooth.md",
-    "ysh_223/Protocol/Zigbee.md",
-    "ysh_223/Protocol/CSMA & CD.md",
-    "ysh_223/Protocol/SSH.md",
     "ysh_223/img/Pasted image 20260110205445.png",
     "ysh_223/img/Pasted image 20260110205435.png",
     "ysh_223/img/Pasted image 20260110205402.png",
-    "ysh_223/Protocol/Serial Communication & Protocol.md",
     "ysh_223/img/Pasted image 20260110204409.png",
-    "ysh_223/Protocol/SPI.md",
     "ysh_223/img/Pasted image 20260110205107.png",
     "ysh_223/img/Pasted image 20260110205052.png",
     "ysh_223/img/Pasted image 20260110205042.png",
-    "ysh_223/img/Pasted image 20260110205028.png",
-    "ysh_223/Protocol/I2C.md",
-    "ysh_223/Protocol/LBT, ALOHA.md",
-    "ysh_223/Protocol/LoRa Protocol.md",
-    "ysh_223/Protocol/MQTT.md",
-    "ysh_223/Protocol/Websocket.md",
-    "ysh_223/Protocol/TCP.md",
-    "ysh_223/img/Pasted image 20260110204740.png",
     "ysh_223/img",
     "ysh_223/Protocol",
     "ysh_223"
