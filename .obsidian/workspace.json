@@ -11,12 +11,15 @@
             "id": "8bbfe7b2f32280c9",
             "type": "leaf",
             "state": {
-              "type": "image",
+              "type": "markdown",
               "state": {
-                "file": "ysh_223/img/Pasted image 20260110213307.png"
+                "file": "ysh_223/Network/ARP & MAC.md",
+                "mode": "source",
+                "source": false,
+                "backlinks": false
               },
-              "icon": "lucide-image",
-              "title": "Pasted image 20260110213307"
+              "icon": "lucide-file",
+              "title": "ARP & MAC"
             }
           }
         ]
@@ -189,10 +192,18 @@
       "obsidian-git:Open Git source control": false
     }
   },
-  "active": "e3cae631e2b7e5f4",
+  "active": "8bbfe7b2f32280c9",
   "lastOpenFiles": [
-    "ysh_223/ESP32/ESP32-C3 DevkitM-1.md",
+    "ysh_223/Network/내부망과 외부망 (IPv4 & IPv6).md",
+    "ysh_223/Network/ARP & MAC.md",
+    "ysh_223/Network/OSI 7계층.md",
+    "Pasted image 20260110213738.png",
+    "ysh_223/Network/DNS.md",
+    "Pasted image 20260110213546.png",
+    "ysh_223/Network/Network.md",
+    "ysh_223/Network",
     "ysh_223/img/Pasted image 20260110213307.png",
+    "ysh_223/ESP32/ESP32-C3 DevkitM-1.md",
     "ysh_223/img/Pasted image 20260110213257.png",
     "ysh_223/ESP32/ESP32_Websocket_Send_MSG.md",
     "ysh_223/ESP32/ESP32_GPIO_CONTROLL.md",
@@ -215,10 +226,6 @@
     "ysh_223/C/snprintf.md",
     "ysh_223/C/캐스팅.md",
     "ysh_223/C/구조체 메모리 패딩.md",
-    "ysh_223/C/전처리기 조건부 컴파일.md",
-    "ysh_223/C/참조자.md",
-    "ysh_223/C/유용한 C++.md",
-    "ysh_223/C/New malloc.md",
     "ysh_223/C",
     "무제",
     "ysh_223/img/Pasted image 20260110205208.png",
@@ -227,8 +234,6 @@
     "ysh_223/img/Pasted image 20260110205402.png",
     "ysh_223/img/Pasted image 20260110204409.png",
     "ysh_223/img/Pasted image 20260110205107.png",
-    "ysh_223/img/Pasted image 20260110205052.png",
-    "ysh_223/img/Pasted image 20260110205042.png",
     "ysh_223/img",
     "ysh_223/Protocol",
     "ysh_223"
