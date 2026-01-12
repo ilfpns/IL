@@ -1,5 +1,5 @@
 CPU 부팅 중 setup_arch() 에서
-[[Kernel]]
+[[Kernel]] [[ARM]]
 물리 메모리를 수집 → 가상주소로 매핑 → 페이지 단위로 커널이 쓰게 만드는 과정 설명
 
 1. 물리 메모리 수집
@@ -89,3 +89,5 @@ memblock.reserved → 커널, device, hole
 |x86_64|e820 기반, paging_init 이후 공통|
 |arm64|bootmem_init 안에서 공통 초기화|
 |riscv|misc_mem_init 안에서 공통 초기화|
+결론
+물리 메모리 수집 후 가상주소로 매핑 후 페이지 분할
