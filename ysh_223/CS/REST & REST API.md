@@ -51,7 +51,6 @@
 > Bad Example [http://khj93.com/delete-post/1](http://khj93.com/delete-post/1)  Good Example  [http://khj93.com/post/1](http://khj93.com/post/1)
 
 > **RESTful**
-
 ---
 
 ⇒ REST API 설계 규칙을 올바르게 지킨 시스템을 명명
