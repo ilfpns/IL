@@ -1,5 +1,5 @@
 > **CFS 사전 개념**
-[[Linux & Kernel]] [[OS]] [[Scheduling]] 
+[[Linux]] [[OS]] [[Scheduling]] 
 ---
 
 1. 타임 슬라이스

@@ -1,5 +1,5 @@
 > **Driver**
-[[OS]] [[Linux & Kernel]] [[HW]]
+[[OS]] [[Linux]] [[HW]]
 ---
 
 ⇒ OS와 디바이스를 이어주는 소프트웨어

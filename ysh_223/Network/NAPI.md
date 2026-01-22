@@ -1,5 +1,5 @@
 > **NAPI**
-[[Linux & Kernel]] [[Network]]
+[[Linux]] [[Network]]
 ---
 
 ⇒ Interrupt와 Polling 방식이 결합된 구조로 동작하는 모드

@@ -1,4 +1,4 @@
-[[Linux & Kernel]]
+[[Linux]]
 ### ls
 
 ⇒ list의 약자로 Windows 명령 프롬포트에서 dir 명령과 같은 역할이다. 해당 디렉토리에 있는 파일을 나열한다.
