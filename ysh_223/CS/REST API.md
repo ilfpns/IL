@@ -1,4 +1,4 @@
-> **REST [Representational State Transfer]**
+> Representational State Transfer
 [[CS]]
 ---
 
