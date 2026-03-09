@@ -1,4 +1,4 @@
-[[C]]
+[[Tag/C]]
 ```cpp
 template <typename T>
 T add(T a, T b) {

@@ -1,5 +1,5 @@
 > **Volatile**
-[[C]]
+[[Tag/C]]
 ---
 
 ⇒ Volatile : 휘발성 물질, 불안정한

@@ -1,4 +1,4 @@
-[[C]]
+[[Tag/C]]
 ```cpp
 int* p = new int;    // int 하나 동적 할당
 *p = 10;

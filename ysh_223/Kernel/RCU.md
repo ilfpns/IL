@@ -1,5 +1,5 @@
 > **Read Copy Update**
-[[Kernel]] [[C]]
+[[Kernel]] [[Tag/C]]
 ---
 
 ⇒ 읽기는 락 없이, 쓰는 쪽은 비용을 지불하는 커널 전용 동시성 메커니즘

@@ -1,4 +1,4 @@
-[[C]]
+[[Tag/C]]
 > **Void Pointer**
 ---
 
