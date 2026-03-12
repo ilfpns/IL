@@ -20,7 +20,8 @@ int main(void) {
 
 ---
 
-![[Pasted image 20260313002740.png]]
+<img width="1201" height="361" alt="image" src="https://github.com/user-attachments/assets/e1662fe8-df24-40d0-907c-878423cf88c2" />
+
 CUDA table
 
 - Dimensionality of thraed block (최대 차원) : 3
