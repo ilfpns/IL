@@ -1,0 +1,232 @@
+<aside>
+
+관심분야
+
+- C/C++
+- GPOS
+- RTOS
+- Linux
+- BSP
+- Rust
+- CUDA (GPU/NPU/TPU)
+</aside>
+
+<aside>
+
+배워야 할 것
+
+- language
+    - C/C++
+        - GCC 컴파일 과정
+        - 포인터
+        - 메모리
+        - 구조체
+        - 메모리 정렬
+        - 비트 매니퓰레이션
+        - RISC-V
+            - (ISA)
+            - **FENCE**
+            - Atomic 연산
+        - Make & Makefile → CMake
+        - Cross-Compiler
+        - snprintf
+        - 특수 키워드
+            - volatile
+            - **__attribute__**
+            - extern
+            - ifdef
+            
+            등
+            
+    - ASM
+    - Rust
+- OS
+    - GPOS
+        - Application Binary Interface
+        - 스케줄러
+            - CFS
+            - RMS
+            - EDF
+            - 우선순위기
+            - 제외 더 많은 스케줄링 기법
+        - MMU
+            - TLB
+        - MMIP
+        - IOMMU
+        - Memory
+            - stack
+            - heap
+            - bss
+            - code
+            - data
+            - flash mem
+            - cache
+            - disk
+            - ram
+            - OMM Killer
+            - 메모리 맵
+            - 메모리 배리어
+            - 메모리 orderging
+            - Lazy allocation & Demanding paging
+        - 메모리 접근
+            - Page Fault
+            - page table
+        - workqueue
+        - blocking / non blockin io
+        - POSIX
+        - copy to user & copy from user
+        - VFS
+        - CPU/IO Bound
+        - 동시성 & 병렬
+        - Load Average
+    - RTOS
+        - STM32 & ESP32 에서 RTOS 제어
+        - 상호배제
+            - Semaphore
+            - Mutex
+            - Spinlock
+        - 알고리즘
+            - 동기, 비동기
+            - lock-Free
+            - Wati-Free
+        - NAPI
+        - 우선순위 역전/상속
+        - systick
+        - RCC
+    - Linux
+        - Linux 이론
+        - ioctl
+        - 리눅스 뜯기
+        - GRO
+        - ITR
+        - 커널 뜯기
+        - Netlink
+        - ELF
+        - FIle system
+        - dynamic tick
+        - buddy system & slab system
+        - 커널 포팅
+        - zero copy
+        - RCU
+        - COW
+- BSP
+    - Yocto
+        - bitbake
+        - pocky
+        - 실습
+        
+    - Device driver
+    - device tree
+- GPU/NPU/TPU
+    - CUDA
+    - Triton
+    - 양자화
+    - 타일링
+    - 레이어 퓨전
+    - Mapped Pinned Memory
+    - DDIO
+- Board
+    - STM A/R
+        - AMBA
+            - AHB
+            - APB
+            - AXI
+        
+    - ESP32
+    - RaspberryPi
+    - OrangePi
+    - Jetson
+- ETC
+    - PCle
+        - MSI-X Interupt
+        - Cache Coherency
+    - TensorRT
+    - L4T
+    - DMA
+    - DeepStream
+    - Low level
+    - 칩렛
+    - FTR (정형 기술 검토)
+    - FSM
+    - 독시즌
+    - UCle
+    - CXL IP
+- IDE
+    - VSC
+    - VS
+    - Vim
+    - STM CUBE
+    - STM IDE
+    - STM MX
+    - Espressif
+    - Portmoon
+    - WInscp
+    - UltraNC
+- Protocol
+    - UART / USART
+    - I2C
+    - SPI
+    - WiFi
+    - BLE
+    - MQTT
+    - LoRa
+    - CAN
+    - Web Socket
+    - LBT, CSMA/CD, CSMA/CA
+    - SSH
+    - SSE
+    - HTTP
+- Tools
+    - 오실로스코프
+    - 파워서플라이
+    - 멀티미
+- Embedded
+    - ADC/DAC
+    - PWM
+    - ISR
+    - OTA
+    - handler
+    - MUX
+    - W1TC & W1TS ~ Bank
+    - pipreline
+    - ring buffer
+    - Clock
+        - Frequency
+    - 자료구조
+        - stack
+        - queue
+        - runqueue
+            - SMP (Symmetric multiprocessing)
+        - tree
+            - tree
+            - 이진트리
+            - 균형 트리
+            - B+/B- tree
+        - 그래프
+    - 부트로더
+    - 암달의 법칙
+    - QEMU, KVM
+    - RISC, CISC
+    - MSI
+    - NUMA, UMA
+    - WCET
+    - 동기/비동기
+    - CPU privilege
+- Net
+    - DNS
+    - payload & header ( + 멀티파트)
+    - OSI 7layers
+    - TCP/IP 4layers
+    - 망
+    - IP, MAC
+    - checksum
+        - crc
+        - magic
+    - 장치
+        - 모뎀
+        - 라우터
+        - 게이트웨이
+        - 스위치
+        - 허브
+    - NAT
+</aside>
