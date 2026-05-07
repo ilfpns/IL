@@ -1,4 +1,4 @@
----
+
 
 ## BootLoader?
 
@@ -138,6 +138,170 @@
 
 ## 부트로더 뜯어보기
 
+- LoadMap
+    
+    **[0] 환경 세팅 ✅ 완료**
+    
+    `목표: 크로스컴파일 환경 구성
+    만진 것: WSL, 환경변수
+    
+    export ARCH=arm
+    export CROSS_COMPILE=arm-linux-gnueabihf-
+    
+    - WSL 설치
+    - arm-linux-gnueabihf- 툴체인 설치
+    - ARCH, CROSS_COMPILE 환경변수 설정`
+    
+    **[1] 커널 빌드 ✅ 완료**
+    
+    `목표: ARM용 커널 빌드
+    만진 파일: kernel/linux/
+    
+    - Linux 커널 소스 clone
+    - vexpress_defconfig로 설정
+    - 빌드 → zImage, vexpress-v2p-ca9.dtb 생성
+    - QEMU로 커널 단독 부팅 확인`
+    
+    **[2] rootfs 구성 ✅ 완료**
+    
+    `목표: 커널이 올릴 최소 파일시스템 구성
+    만진 파일: rootfs/
+    
+    rootfs/
+    ├── init          ← 커널이 PID 1로 실행
+    ├── bin/sh        ← busybox 복사
+    ├── dev/console   ← mknod으로 생성
+    ├── proc/         ← 마운트 포인트
+    └── sys/          ← 마운트 포인트
+    
+    - BusyBox 소스 clone
+    - static 링크로 빌드
+    - rootfs 디렉토리 구조 생성
+    - cpio로 묶어서 rootfs.cpio 생성
+    - QEMU로 부팅 확인 → shell 프롬프트 확인`
+    
+    **[3] U-Boot 빌드 ✅ 완료**
+    
+    `목표: U-Boot 빌드 및 쉘 확인
+    만진 파일: u-boot/
+    
+    - U-Boot 소스 clone
+    - vexpress_ca9x4_defconfig로 설정
+    - 빌드 → u-boot 실행파일 생성
+    - QEMU로 U-Boot 쉘 (=>) 확인`
+    
+    **[4] U-Boot에서 커널 부팅 ← 지금 여기**
+    
+    `목표: U-Boot 쉘에서 bootz로 커널 + rootfs 부팅
+    만지는 파일: run.sh, U-Boot 쉘 명령어
+    
+    - run.sh 스크립트 작성
+    - QEMU 실행 시 커널/DTB/rootfs 메모리에 올리기
+    - U-Boot 쉘에서 bootz 명령어 실행
+    - 커널 → rootfs → shell 뜨는 것 확인
+    
+    부팅 체인:
+    QEMU → U-Boot → 커널 → rootfs → shell`
+    
+    **[5] U-Boot 포팅**
+    
+    `목표: 존재하지 않는 새 보드를 U-Boot에 등록
+    만지는 파일:
+      board/mycompany/myboard/myboard.c
+      include/configs/myboard.h
+      configs/myboard_defconfig
+    
+    - board/mycompany/myboard/ 디렉토리 생성
+    - myboard.c 작성 (보드 초기화 코드)
+    - myboard.h 작성
+        - 메모리 맵 (DRAM 주소, 크기)
+        - UART 설정 (콘솔 출력)
+        - 부팅 명령어 (CONFIG_BOOTCOMMAND)
+    - myboard_defconfig 작성
+    - 빌드 후 QEMU로 부팅 확인`
+    
+    **[6] Device Tree 작성**
+    
+    `목표: 새 보드의 하드웨어를 DTB로 표현
+    만지는 파일: arch/arm/dts/myboard.dts
+    
+    - .dts 파일 직접 작성
+        - CPU 정의
+        - 메모리 정의
+        - UART 정의
+        - 버스 (I2C, SPI) 정의
+    - dtc로 컴파일해서 .dtb 생성
+    - 커널에 붙여서 부팅 확인`
+    
+    **[7] 커널 포팅**
+    
+    `목표: 새 보드에서 커널이 정상 동작
+    만지는 파일:
+      arch/arm/configs/myboard_defconfig
+      drivers/
+    
+    - 새 보드용 defconfig 작성
+    - DTB 연결
+    - 드라이버 확인
+        - UART 드라이버 (콘솔 출력)
+        - 메모리 드라이버
+        - GPIO 드라이버
+    - 커널 부팅 로그 분석`
+    
+    **[8] rootfs 자동화 (Buildroot)**
+    
+    `목표: Buildroot로 rootfs 자동 생성
+    만지는 파일: buildroot/.config
+    
+    - Buildroot 설정
+    - 패키지 추가 (busybox, 네트워크 툴 등)
+    - 자동으로 rootfs.cpio 생성
+    - 수동으로 만든 것과 비교`
+    
+    **[9] 디버깅**
+    
+    `목표: 부팅 안 될 때 혼자 디버깅
+    만지는 파일: 로그 분석
+    
+    - UART 로그 분석
+    - 커널 패닉 메시지 해석
+    - U-Boot 환경변수로 디버깅
+    - JTAG 디버거 개념 (실제 보드)`
+    
+    **[10] 실제 보드 (선택)**
+    
+    `목표: QEMU 말고 실제 하드웨어에서 동작
+    대상: Raspberry Pi 4 or BeagleBone Black
+    
+    - SD카드/eMMC에 이미지 굽기
+    - 실제 UART 연결해서 로그 확인
+    - 실제 부팅 테스트`
+    
+    ---
+    
+    ### 실무 BSP 엔지니어가 실제로 하는 것
+    
+    `1. 칩 벤더한테 새 SoC + 데이터시트 받음
+    2. 레퍼런스 보드 BSP 분석
+    3. 우리 보드에 맞게 U-Boot 포팅
+    4. DTB 작성
+    5. 커널 드라이버 붙이기
+    6. 디버깅 (이게 제일 오래 걸림)
+    7. QA 팀에 넘기기`
+    
+    지금 연습이 3, 4, 5, 6번이에요.
+    
+    ---
+    
+    ### 지금 연습 vs 실무 비교
+    
+    | 지금 연습 | 실무 |
+    | --- | --- |
+    | QEMU 가상 보드 | 실제 보드 |
+    | 수동 rootfs | Yocto / Buildroot |
+    | mainline U-Boot / 커널 | 칩 벤더 포크 |
+    | vexpress 포팅 | 신규 보드 포팅 |
+    | 혼자 | 팀으로 |
 - WSL 설정 및 크로스 컴파일러 설정 → QEMU 기본 실행
     
     이제부터 실전으로 들어가서 부트로더를 뜯어볼 것이다
@@ -231,7 +395,7 @@
      -m 256M   
      -kernel kernel/linux/arch/arm/boot/zImage   
      -dtb kernel/linux/arch/arm/boot/dts/arm/vexpress-v2p-ca9.dtb   
-     -initrd rootfs.cpio   
+     -initrd oldrootfs.cpio   
      -nographic   
      -append "console=ttyAMA0 rdinit=/init"   
      -audio none
@@ -394,3 +558,224 @@
     - 환경변수 저장/불러오기
     - 스크립트로 자동 부팅 시퀀스 구성
     - HW test
+        
+        **QEMU clone** 
+        
+        ```c
+        git clone https://source.denx.de/u-boot/u-boot.git
+        ```
+        
+        **실행**
+        
+        ```c
+        make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- vexpress_ca9x4_defconfig
+        sudo apt install libgnutls28-dev
+        make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- -j$(nproc)
+        
+        qemu-system-arm \
+          -M vexpress-a9 \
+          -m 256M \
+          -kernel u-boot \
+          -nographic \
+          -audio none
+        ```
+        
+        [Addr](https://www.notion.so/Addr-358d43ab359a800f845bdd6ab9775949?pvs=21)
+        
+        **흐름**
+        
+        ```c
+        QEMU 실행
+            ↓
+        U-Boot 시작 (하드웨어 초기화)
+            ↓
+        U-Boot 쉘 (=> 프롬프트)
+            ↓
+        bootz 명령어 실행
+            ↓
+        커널 압축 해제 & 실행
+            ↓
+        /init 실행 (PID 1)
+            ↓
+        /bin/sh 실행
+            ↓
+        ~ # 프롬프트
+        ```
+        
+        딱봐도 뭔가 복잡해졌다.
+        
+        QEMU는 -device loader로 kernel/DT/rootfs를 지정한 메모리 주소에 직접 가져다 둔다. 또한 U-Boot는 하드웨어 초기화 이후 그 주소해서 커널을 찾아서 실행한다
+        
+        실제로는 다음과 같은 흐름이다.
+        
+        즉 QEMU가 ROM code + SPL의 역할을 해주는 것이다
+        
+        ```c
+        전원 => ROME code -> SPL -> U-Boot -> kernel
+        ```
+        
+        ROM code는 알겠는데, SPL은 뭘 의미할까?
+        
+        Secondary Program Loader의 약자이다.
+        
+        ROM code는 SoC안에 영구적으로 박혀있다. SRAM은 전원이 들어오면 바로 쓸 수 있지만, DRAM을 그렇지 않다.
+        
+        그렇다고 SRAM에 U-Boot를 올리기엔 (KB인 SRAM은 MB인 U-Boot를 올릴 수 없음) 너무 작다
+        
+        그렇기 때문에 STAM에 올릴 수 있는 작은 로더가 필요했고, 이를 SPL이라 한다
+        
+    
+    **하는 일**
+    
+    ```c
+    1. DRAM 컨트롤러 초기화
+       (클럭, 타이밍, 전압 설정)
+            ↓
+    2. DRAM 테스트
+            ↓
+    3. DRAM에 U-Boot 전체 복사
+            ↓
+    4. U-Boot로 점프
+    ```
+    
+    - 메모리 관점
+        
+        ```c
+        전원 ON
+            ↓
+        ROM Code (SRAM) → SPL 올리기
+            ↓
+        SPL (SRAM) → DRAM 초기화 → U-Boot 올리기
+            ↓
+        U-Boot (DRAM) → 커널 올리기
+            ↓
+        커널 (DRAM) → 시스템 운영
+        ```
+        
+    - BSP가 다루는 MEM
+        
+        [SoC 내부]                    [SoC 외부]
+        ┌─────────────┐              ┌─────────────┐
+        │ ROM (SRAM)      │              │  DDR RAM        │ ← 실행 메모리
+        │ IRAM            │              │  eMMC/UFS       │ ← 저장장치
+        │ Cache           │              │  NAND Flash     │ ← 저장장치
+        │ 레지스터           │              │  NOR Flash      │ ← 부트용
+        └─────────────┘              └─────────────┘
+        
+        SRAM (on-chip)
+        SoC 칩 안에 내장된 RAM이다
+        용량은 당연히 작을 것이다. 대신 빠르겠지
+        
+        이는 DDR 초기화 전에 유일하게 쓸 수 있는 메모리이다.
+        그렇다면 DRAM은? 못 쓴다, 초기화 전에 사용하지 못 한다.
+        
+        DDR을 올리기 전까지 SRAM을 사용한다
+        (사실 Secondary Program Loader라는 게 있긴 하다, SRAM안에서 돌아가는 프로그램으로 DRAM을 init한다)
+        
+        ---
+        
+        Double Data Rate SDRAM
+        DDR은 쉽게 말하면 그냥 RAM이다.
+        
+        개념에 들어가기 앞서 SDRAM에 대해 알아보고자 한다.
+        
+        DRAM (Dynamic RAM)
+        
+        - 커패시터 전하 저장
+        - 느리지만 큰 용량 보유
+        - 저렴하다
+        - 주기적 리프레시가 필요하다
+        
+        S는 SRAM을 의미하는 것 같지만, 사실은 Synchronous이다.
+        즉 클럭을 맞추는 DRAM이다.
+        
+        CPU/Mem ctrl의 clock signal과 동기화되어 동작한다.
+        => 몇 클럭 뒤에 데이터 출력 <= 같은 기능이 가능하다.
+        
+        SDR (Single Data Rate) - 클럭 올라갈 때만 데이터 전송
+        DDR (Double Data Rate) - 클럭 올라갈 때 + 내려갈 때 둘 다 전송
+        → 같은 클럭으로 2배 대역폭
+        즉 SDR은 Rising Edge 시 데이터를 전송하고, DDR은 Falling Edge와 Rising Edge 전부 데이터를 전송한다는 의미이다.
+        저전력을 요구하는 Embedded System에서는 LPDDR을 사용한다. 이는 Low Power를 의미한다.
+        
+        ---
+        
+        DDR은 SRAM이 아니다, 이전에 공부했듯 초기화 이전에 사용 가능한 RAM은 SRAM 밖에 없다.
+        즉 BSP는 DDR을 초기화하는 BootLoader를 만드는 것이 좋은 방향임을 알 수 있다.
+        
+        제조사마다 DDR 설정이 다르기 떄문에, 물리적 조건에 따라 타이밍 파라미터를 전부 다 맞춰줘야 한다
+        
+        - tCL : 명령을 보내고 데이터가 올 때까지 대기
+        - tRCD : 행을 열고, 열을 접근하기까지 대기
+        - tRP : 행을 닫는 데 걸리는 시간
+        - tRAS : 행을 열어두는 최소 시간
+        
+        ```
+        # 메모리 맵 정의 (Device Tree)
+        memory@0 {
+            reg = <0x0 0x00000000 0x0 0x80000000>; // 2GB
+        };
+        
+        # 영역 분할
+        0x00000000 ~ 0x00008000  → 커널 시작
+        0x00000000 ~ 0x08000000  → 커널 영역
+        0x08000000 ~ 0x10000000  → 유저스페이스
+        0x10000000 ~ 0x18000000  → GPU 전용
+        0x18000000 ~ 0x20000000  → ISP/카메라 전용
+        ```
+        
+        CMA (Contiguous Memory Allocator)
+        카메라, 비디오 인코더같은 HW는 물리적으로 연속된 큰 메모리가 필요하다
+        이걸 미리 예약하는 역할이 BSP이다
+        
+        ```
+        # Device Tree에서
+        reserved-memory {
+            cma_region: cma {
+                size = <0x20000000>; // 512MB 예약
+                linux,cma;
+            };
+        };
+        ```
+        
+        ---
+        
+        NAND Flash
+        not and flash임을 그 누구도 쉽게 알 수 있다.
+        특징은 다음과 같다
+        
+        - 큰 용량
+        - 읽기/쓰기가 비교적 빠르다
+        - Bad block이 발생한다
+        - XIP 안 된다 (RAM에 올려서 실행해야 한다)
+            - eXecute In Place의 약자로, 메모리에 복사하지 않고 저장장치에서 직접 실행
+        
+        Bad Block관리는 BSP의 핵심이다.
+        
+        NAND는 쓰다보면 특정 블록이 죽는다.
+        (데이터를 Electron 형태로 저장하는데, 이를 쓰기/지우기를 반복할수록 마모된다)
+        죽은 블록은 건너뛰고 써야 한다.
+        
+        BBT (Bad Block Table)
+        
+        - 어느 블록이 죽었는지 기록
+        - BootLoader가 init될 때 스캔한다
+        - dead block을 자동으로 skip한다
+        
+        ECC (Error Correction Code)
+        
+        - 비트 에러를 자동으로 수정한다
+        - HW ECC 쓰는지 or SW적으로 CPU를 사용해야 하는지에 따라 다름
+        - ECC 강도 설정 (4bit, 8bit, 24bit, 몇 비트까지 오류 검출이 가능한가?)
+        
+        eMMC
+        
+        - NAND Flash + 컨트롤러가 하나의 패키지
+        - Bad Block 관리를 내부에서 알아서 함
+        - BSP 입장에선 그냥 블록 디바이스로 보임
+        
+        UFS
+        
+        - eMMC 후속
+        - 속도 훨씬 빠름
+        - rk3588 같은 고급 SoC에서 씀
