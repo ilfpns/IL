@@ -1,5 +1,4 @@
 
-
 ## BootLoader?
 
 컴퓨터가 부팅될 때 가장 먼저 실행되는 소프트웨어로, OS를 로드 및 실행하며, 커널을 로드하는 역할을 한다.
@@ -535,7 +534,7 @@
     Cross compile -> kernel build -> Busybox build -> create rootfs -> QEMU 부팅 
     ```
     
-- U-boot 빌드 및 포팅
+- U-boot 빌드
     - 현재 순서:  `QEMU → kernel → rootfs`
     - 바꾼 순서: `QEMU → U-Boot → kernel → rootfs`
     
@@ -779,3 +778,321 @@
         - eMMC 후속
         - 속도 훨씬 빠름
         - rk3588 같은 고급 SoC에서 씀
+- U-Boot 실무
+    
+    What is fucking 실무,,,, 이걸 아는 데에 존나 고생했다
+    
+    일단 `u-boot/.config` 가면 내가 어떤 옵션을 쓸건지를 볼 수 있다
+    
+    - `u-boot/.config` 열어서 무슨 옵션이 켜져 있는지 확인
+    - `u-boot/run.sh` 보면서 QEMU에 어떤 인자로 실행되는지 분석
+    - U-Boot 띄우고 `printenv`로 환경변수 분석
+    - `bdinfo`로 메모리 맵 확인
+    - 그 정보를 가지고 직접 `bootz` 명령 조립해서 커널 부팅
+    
+    ![image.png](attachment:39645e98-375a-450a-84ea-05cead06fbdc:image.png)
+    
+    로그 분석을 해보겠다.
+    
+    1. `Wrong image type 3, expected 2` ← QEMU가 ELF파일을 로드했는데 이미지 타입이 예상과 다르기에 뜬 오류이다. 하지만 U-Boot로 정상정으로 넘어갔으니 무시해도 된다
+    
+    1. `MMC Device 1 not found`  ← U-Boot가 SD카드 (MMC)에서 부팅 이미지를 찾으려 헀는데, QEMU 실행 옵션에 SD카드를 안 붙였기 때문에 뜬 것이다. QEMU는 보드가 없으므로 정상이다
+        1. `TFTP from server 10.0.2.2 … Access violation`  ← U-boot가 TFTP (네트워크)로 부팅 이미지를 받으려 시도함
+            - 해석
+                - `10.0.2.2` = QEMU의 가상 호스트 IP (게이트웨이)
+                - `10.0.2.15` = QEMU 안 U-Boot의 IP
+                - `0A00020F.img` = `0A.00.02.0F` = `10.0.2.15`을 hex로 변환한 파일명
+                
+                U-Boot가 PXE 부팅 시도한 것이다. "내 IP에 해당하는 펌웨어 이미지 줘"라고 요청했는데, TFTP 서버가 없으니 실패. 이것도 정상이다
+                
+        
+        ![image.png](attachment:95db2713-57f2-4b5b-921a-20bfea0a8256:image.png)
+        
+        1. `Wrong Image Type for bootm command` / `ERROR -91: can't get kernel image!`← 마지막 시도로 메모리에 이미 있는 뭔가를 `bootm`으로 부팅하려다 실패함.
+- 실행 파일
+    
+    QEMU를 실행할 떄마다 그 긴 파라미터를 포함하는 명령어를 치는 것은 너무 비효율적이다. 그렇기 떄문에 하나의 실행 파일로 정리하면 좋을 것 같다.
+    
+    ```c
+    #!/bin/bash
+    
+    KERNEL_ADDR=0x62000000
+    DTB_ADDR=0x68000000
+    ROOTFS_ADDR=0x69000000
+    
+    KERNEL=../kernel/linux/arch/arm/boot/zImage
+    DTB=../kernel/linux/arch/arm/boot/dts/arm/vexpress-v2p-ca9.dtb
+    ROOTFS=/embedded-linux-qemu-labs/rootfs.cpio.uboot
+    
+    qemu-system-arm \
+      -M vexpress-a9 \
+      -m 256M \
+      -kernel u-boot \
+      -device loader,file=${KERNEL},addr=${KERNEL_ADDR} \
+      -device loader,file=${DTB},addr=${DTB_ADDR} \
+      -device loader,file=${ROOTFS},addr=${ROOTFS_ADDR} \
+      -nographic \
+      -audio none
+    ```
+    
+    ---
+    
+    - 주소 변수
+        
+        ```c
+        KERNEL_ADDR=0x62000000
+        DTB_ADDR=0x68000000
+        ROOTFS_ADDR=0x69000000
+        
+        0x60000000 ─┬─────────────────── DRAM 시작 (256MB)
+                    │
+        0x60000000  │  ← U-Boot가 자기 자신을 올리는 영역
+                    │
+        0x62000000  │  ← KERNEL을 올릴 곳 (여기 32MB쯤 비워둠)
+                    │
+        0x68000000  │  ← DTB를 올릴 곳
+                    │
+        0x69000000  │  ← rootfs.cpio.uboot를 올릴 곳
+                    │
+        0x70000000 ─┴─────────────────── DRAM 끝 (256MB = 0x10000000)
+        ```
+        
+        사용하는 보드의 메모리 맵을 볼 수 있어야 한다
+        
+        각 영역은 서로 충돌하지 않도록 간격을 두어 배치하면 된다
+        
+        → 절대적인 정답이 없다
+        
+        ![image.png](attachment:a66b290b-9732-4586-bc28-96e870db04ae:image.png)
+        
+        우리는 이렇게 주소를 알 수 있다.
+        
+        이를 SSoT(single source of truth)라고 한다
+        
+        ⇒ 신뢰 할  수 있는 정보는 한 곳에 몹는다
+        
+        보드의 메모리 맵은 DT에 적혀있고, 모든 SW (u-boot, kernel)은 이것을 따른다
+        
+        - 다른 방법
+            
+            그냥 QEMU돌리고 bdinfo 치면 다 나온다
+            
+            ![image.png](attachment:847664ba-eb44-4573-925c-6d27361e9c26:image.png)
+            
+    - 경로
+        - KERNEL: 이미지 경로
+        - DTB        : dtb 경로
+        - ROOTFS: rooft.cpio.uboot 경로
+        
+        rootfs가 단순히 cpio가 아닌 .uboot이다. 이는 u-boot가 인식하는 uImage 포맷으로 변환 한 것이다
+        
+    - QEMU
+        
+        ```c
+        qemu-system-arm \
+          -M vexpress-a9 \
+          -m 256M \
+          -kernel u-boot \
+          -device loader,file=${KERNEL},addr=${KERNEL_ADDR} \
+          -device loader,file=${DTB},addr=${DTB_ADDR} \
+          -device loader,file=${ROOTFS},addr=${ROOTFS_ADDR} \
+          -nographic \
+          -audio none
+        ```
+        
+        - 보드 모델, 메모리, 그래픽, 오디오는 대충 알겠는데
+        - device loader는 뭘까?
+        
+        이는 QEMU 기능으로, 부팅 전에 메모리의 특정 주소에 파일을 올리는 명령어이다
+        
+        즉, 부팅 전에 이미 메모리가 세팅된다
+        
+        ```c
+        bootz $KERNEL_ADDR $ROOTFS_ADDR $DTB_ADDR
+        이걸로 부팅 할 수 있다
+        ```
+        
+        실제 보드는 다음과 같다
+        
+        ```c
+        SD카드/eMMC/NAND에 파일이 있음
+            ↓
+        U-Boot가 그 저장장치에서 메모리로 직접 읽어옴 (load mmc, fatload 등)
+            ↓
+        bootz로 부팅
+        ```
+        
+    
+    그래서 환경변수 에러는 왜 터졌을까?
+    
+    그건 u-boot 기본 부팅 시퀀스 (bootcmd) 떄문이다
+    
+    bootcmd는 다음과 같이 정해진다
+    
+    - 저장된 환경변수 (Flash/eMMC 등) — 사용자가 `saveenv`로 저장한 것
+    - 컴파일 시 박힌 기본값 — `include/configs/*.h` 또는 `.config`의 `CONFIG_BOOTCOMMAND`
+    - distro_bootcmd — U-Boot의 표준 자동 부팅 매크로 (현대적)
+    
+    기본값을 쓰기 때문에 에러 발생
+    
+    기본 bootcmd 정책
+    
+    ```c
+    1. MMC에서 부팅 시도   → 실패 (SD카드 없음)
+    2. USB에서 부팅 시도   → 실패 (USB 없음)
+    3. NET에서 PXE 시도   → 실패 (TFTP 서버 없음) ← 여기서 본 메시지
+    4. NET에서 DHCP+TFTP → 실패
+    5. 모두 실패 → 쉘로 떨어짐
+    ```
+    
+    그럼 이제부터 어떻게 환경변수를 분석해야 하는지 알아보자.
+    
+    1. 부트로더 시작
+    2. Hit any key to stop autoboot: 3 ← 카운트 동안 키 누름
+    3. 쉘 진입
+    4. printenv 입력 (사진에 있는 값 확인)
+        1. printenv bootcmd
+        2. printenv bootargs
+    
+    ![image.png](attachment:947c0b84-25ab-4a09-bc2a-049956d0ff35:image.png)
+    
+    1. bdinfo (각 주변장치 주소 확인)
+    2. help ← 사용 가능한 기능 볼 수 있음
+    3. md 주소 (0x62000000) 10 
+        
+        => md 0x62000000 10
+        62000000: e1a00000 e1a00000 e1a00000 e1a00000  ................
+        62000010: e1a00000 e1a00000 e1a00000 e1a00000  ................
+        62000020: ea000005 016f2818 00000000 005f3d30  .....(o.....0=_.
+        62000030: 04030201 45454545 00006558 e10f9000  ....EEEEXe......
+        
+        이런 값을 보고 이미지가 정상적으로 올라갔음을 알 수 있다.
+        
+- U-boot 포팅
+    
+    ![image.png](attachment:14d22448-e323-4e6a-a0f9-9745e6cd0952:image.png)
+    
+    실행 해보면
+    
+    ![image.png](attachment:50e5aa76-29c9-4380-b03e-40ec7c320375:image.png)
+    
+    우리가 직접 만든 init까지는 접근한다.
+    
+    2가지 문제
+    
+    - busybox: cat 명령어가 안 됨
+        
+        ⇒ 심볼릭 링크 지정이 안 됨
+        
+        - rootfs를 다시 만든다
+        - busybox (명령어 묶음)을 바로가기하는 (심볼릭 링크) 파일이 bin/sh만 있었음
+            
+            ⇒ Shell에서만 동작
+            
+        
+        busybox는 심볼릭 링크를 그냥 만들어주는 기능이 있기에 그걸 써서 bin/? 에 전부 매칭한다
+        
+        그리고 kernel을 돌려보니
+        오류가 또 뜸.
+        
+        ![image.png](attachment:a872acf0-68b7-4804-8102-566c3d9a9428:image.png)
+        
+        파일 규격이 안 맞는다는 뜻이다.
+        
+        file 명령어를 써서 보자
+        
+        ![image.png](attachment:1dce0cb3-2c57-45c6-89c7-a9eed545cf25:image.png)
+        
+        ARM이 아닌 x86으로 돌아가고 있다
+        
+        - 파일 꼬임 해결
+            
+            ```c
+            make distclean <- fullclean
+            make defconfig <- default config
+            ```
+            
+    - mount: 마운트가 안 됨
+    - 실무 BSP 디버깅 cycle
+        
+        ```c
+        make 2>&1 | tee build.log
+        grep -E "error:|Error|FAIL" build.log | head -20
+        ```
+        
+        build.log파일에 빌드 로그를 저장한다. 이를 error나 ERROR, FAIL로 시작하는 로그를 처음 20개만 보는 식으로 에러 로그를 찾는다
+        
+        - 2>&1
+            
+            linux는 출력 로그 길이 2개이다
+            
+            - 1: stdout (일반)
+            - 2: stderr (에러)
+            
+            파일 번호임을 알리는 `&` 를 붙여서 2번 길 로그를 1번에 합쳐서 tee로 build.log로 보관
+            
+        
+        오류 핵심 키워드를 찾고, 이를 기반으로 검색
+        
+        ```c
+        1. busybox 메일링 리스트 (lists.busybox.net)
+        2. GitHub Issues (해당 프로젝트 또는 Debian/Ubuntu 패키지)
+        3. Stack Overflow
+        4. 일반 블로그 (마지막)
+        ```
+        
+        검색 & AI기반으로 해결, 그 후 기록
+        
+        ```c
+        # build_issues.md
+        
+        ## 2026-05-08: BusyBox tc 컴파일 에러
+        **환경**: Ubuntu 24.04, BusyBox master (2026-05), arm-linux-gnueabihf 13.3
+        **증상**: networking/tc.c에서 tc_cbq_lssopt incomplete type 에러
+        **원인**: Linux 6.8+ 헤더에서 CBQ 구조체 deprecated
+        **해결**: `.config`에서 `CONFIG_TC=n`
+        **참고**: https://lists.busybox.net/pipermail/busybox/2024-July/090822.html
+        ```
+        
+        - 꿀 명령어
+            
+            `sed`  : Stream Editor
+            
+            텍스트를 자동으로 수정/변환하는 명령어
+            
+            ```c
+            sed '명령' 파일
+            
+            sed '3s/apple/orange/' file.txt
+            3번째 줄에서만 치환
+            ```
+            
+        - make 명령어
+            
+            ```c
+            make defconfig 
+            - 기본 설정 파일 생성 (.confing)
+            - Source code Compile x
+            - 처음 한 번, 또는 설정을 완전히 리셋할 때
+            ```
+            
+            ```c
+            [.c 파일들] + [.config] → 컴파일 → [.o 파일들] → 링크 → [최종 바이너리]
+            make -j$(nproc)        // 8코어면 8개 병렬, 빠름
+            make                   // 1개씩, 느림
+            make -j4               // 4개 병렬
+            
+            - .config가 있어야 함
+            - .o 파일 + 최종 바이너리 (ex: busybox, u-boot)
+            ```
+            
+            ```c
+            make clean
+            - .o, .bin 파일 삭제
+            - 다시 빌드는 원하지만, 설정은 유지하고 싶을 때
+            ```
+            
+            ```c
+            make distclean
+            - fullclean
+            ```
