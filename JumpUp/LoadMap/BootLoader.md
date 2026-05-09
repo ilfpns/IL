@@ -1,4 +1,5 @@
 
+
 ## BootLoader?
 
 컴퓨터가 부팅될 때 가장 먼저 실행되는 소프트웨어로, OS를 로드 및 실행하며, 커널을 로드하는 역할을 한다.
@@ -412,7 +413,7 @@
     하지만 이는 사용할때마다 만들어야 하는 불편함이 있다. 
     그렇기 때문에 자동 RootFS를 만들어 주어야한다.
     
-    [RootFS](https://www.notion.so/RootFS-356d43ab359a8087bbf8c934e1baee2c?pvs=21)
+    [RootFS](https://www.notion.so/RootFS-35a62a53c757815094f2c75602d6df63?pvs=21)
     
 - U-Boot 제작
     
@@ -579,7 +580,7 @@
           -audio none
         ```
         
-        [Addr](https://www.notion.so/Addr-358d43ab359a800f845bdd6ab9775949?pvs=21)
+        [Addr](https://www.notion.so/Addr-35a62a53c75781f68533c5094cf03a2a?pvs=21)
         
         **흐름**
         
@@ -968,7 +969,7 @@
         
         이런 값을 보고 이미지가 정상적으로 올라갔음을 알 수 있다.
         
-- U-boot 포팅
+- U-boot 이전 커널 쉘 진입
     
     ![image.png](attachment:14d22448-e323-4e6a-a0f9-9745e6cd0952:image.png)
     
@@ -1067,6 +1068,10 @@
             3번째 줄에서만 치환
             ```
             
+            ```c
+            file /embedded-linux-qemu-labs/rootfs/bin/busybox
+            ```
+            
         - make 명령어
             
             ```c
@@ -1096,3 +1101,111 @@
             make distclean
             - fullclean
             ```
+            
+        
+- 백업  + 중간 용어 정리
+    
+    백업이 중요함
+    
+    ```c
+    # QEMU 빠져나오기 (Ctrl+a, x)
+    
+    mkdir -p /embedded-linux-qemu-labs/checkpoint_loadmap4
+    
+    cp /embedded-linux-qemu-labs/rootfs.cpio          /embedded-linux-qemu-labs/checkpoint_loadmap4/
+    cp /embedded-linux-qemu-labs/rootfs.cpio.uboot    /embedded-linux-qemu-labs/checkpoint_loadmap4/
+    cp /embedded-linux-qemu-labs/u-boot/run.sh        /embedded-linux-qemu-labs/checkpoint_loadmap4/
+    cp /embedded-linux-qemu-labs/busybox/.config      /embedded-linux-qemu-labs/checkpoint_loadmap4/busybox.config
+    
+    # rootfs 디렉토리도 통째로
+    cp -r /embedded-linux-qemu-labs/rootfs            /embedded-linux-qemu-labs/checkpoint_loadmap4/
+    
+    # 검증
+    ls -la /embedded-linux-qemu-labs/checkpoint_loadmap4/
+    ```
+    
+    중간중간 빡센 용어들이 많이 나왔다…. 그렇기 때문에 확실하게 짚고 넘어갈 것이다.
+    
+    - SD (MMC)
+        
+        Multi Media Card로 flash 스토리지 규격이다. 기본적 규격으로 오늘날 임베디드는 이 규격으로 개발된 SD, eMMC를 사용한다.
+        
+        - 플래시 메모리이므로, 비휘발성이다
+        
+        SD는 MMC를 기반으로 만들어진 탈착식 카드 규격이다
+        
+        eMMC는 MMC 컨트롤러 + NAND flash를 하나의 패키지로 만들어 보드에 납떔하는 방식이다
+        
+        - Nand Flash + Controller ⇒ a package
+        - 크기가 작음
+        - 저전력
+        - 저비용
+        - 컨트롤러
+            
+            ECC 기능으로 에러를 잡아주며, 특정 칸만 사용되지 않도록 골고루 분배함
+            
+        
+        ```c
+        cat /sys/bus/mmc/devices/mmc0\:0001/preferred_erase_size
+        ```
+        
+        SD/eMMC는 내부적으로 FTL (주소 변환 장치)가 있어서 블록 디바이스처럼 동작하지만, 지우는 단위가 따로 존재함. 파티션 경계가 이 단위에 맞지 않으면 성능이 떨어지므로 파티션을 만들 때 이 값의 배수로 오프셋을 정렬해야 함
+        
+        다음 장치들은 고정 크기 만큼 블럭으로 잘라서 읽는 블럭 디바이스이다
+        
+        - SSD
+        - HDD
+        - eMMC
+        - SD카드
+        - NVMe
+        - USB 저장장치
+        
+        `eMMC erase size=8MB`  라면
+        
+        - 8MB
+        - 16MB
+        - 24MB
+        
+        식으로 파티션을 설정한다
+        
+        - Needed
+            - 타깃 보드에서 `lsblk`, `fdisk -l` 로 mmcblk 장치 확인하는 것 먼저 익숙해지기
+            - `dd` 명령으로 SD 카드에 이미지 굽는 방법 (BSP 배울 때 매일 씀)
+            - U-Boot 셸에서 `mmc` 명령 직접 쳐보기
+            - eMMC `boot0/boot1` 파티션 개념과 부트로더가 어디 저장되는지 이해
+    - TFTP
+        
+        Trivial File Transfer Protocol으로 아주 단순한 파일 전송 프로토콜이다. 
+        
+        FTP에서 인증, 디렉토리 탐색 같은 기능을 빼고 파일 전송 하나만 남긴 프로토콜이다.
+        
+        U-boot가 이더넷으로 파일을 받을 수 있는 유일한 방법이다. U-Boot는 OS가 아니라 복잡한 프로토콜을 구현 할 수 없다. TFTP는 UDP기반에 구현이 단순해서, 이에 적합하다
+        
+        방화벽 (UFW)가 있다면 TFTP가 차단된다
+        
+        ⇒ `ufw allow tftp`
+        
+        - FTP
+            
+            File Transfer Protocol로 파일을 전송하기 위한 프로토콜이다
+            
+            로그인, 디렉토리 검색, 파일 업로드/다운로드, 권한 관리 등 많은 기능이 있음
+            
+            - 구현 복잡
+            - 무거움
+            
+            이것들을 뺀 것이 TFTP
+            
+        
+        u-boot에서 파일을 전송 할 수 있는 유이한 프로토콜인 이유는 뭘까? 이더넷 환경부터 알아보자.
+        
+        한 버스에 여러 호스트가 물려있는 환경을 이더넷 환경이라고 한다.
+        
+        내 local PC와 타킷 board의 u-boot는 한 공유기에 물린 호스트인 셈이다. 내 PC에서 board로 파일을 보내는 것은 TFTP가 유일하다는 의미이다
+        
+    - CRC
+    - Dump
+    - WPA2, WPA1
+    - tty
+    - mount
+    - dd
