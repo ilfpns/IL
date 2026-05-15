@@ -1,4 +1,5 @@
 
+
 - bootloader?
     
     ## BootLoader?
@@ -1298,4 +1299,152 @@
     - u-boot 포팅
         
         이제 새로운 HW를 인식시키는 포팅이라는 작업을 해보려 한다
-**
+        
+        u-boot를 git clone했을 것이다.
+        
+        ```c
+        cat configs/vexpress_caa9x4_defconfig
+        ```
+        
+        실행 시 많은 정보들이 나올 것이다
+        
+        가장 위에
+        
+        ```c
+        CONFIG_ARM=y
+        CONFIG_TARGET_VEXPRESS_CA9X4=y
+        ```
+        
+        부터 내 보드에 맞게 설정한다
+        
+        ```c
+        CONFIG_TEXT_BASE=0x60800000 // DRAM 시작 + 8MB
+        CONFIG_CUSTOM_SYS_INIT_SP_ADDR=0x60000f10 // stack pointer addr
+        ```
+        
+        DRAM시작이 0x60000000이고, 여기서 8MB띄어서 지정한다. U-boot 실행 중 stack/heap으로 사용된다
+        
+    
+    ```c
+    CONFIG_DEFAULT_DEVICE_TREE="vexpress-v2p-ca9"
+    CONFIG_DEFAULT_FDT_FILE="vexpress-v2p-ca9.dtb"
+    ```
+    
+    부팅 시 보드가 사용할 dts파일 이름이다
+    
+    ```c
+    CONFIG_SYS_LOAD_ADDR=0x90000000
+    ```
+    
+    u-boot의 기본 로드 주소이다
+    
+    다음은 bootcmd 관련 설정이다
+    
+    ```c
+    CONFIG_BOOTCOMMAND="run distro_bootcmd; run bootflash" // 환경변수 기존값
+    CONFIG_DISTRO_DEFAULTS=y // 기본 설정으로 MMC->USB0>PXE->DHCP 순서로 부팅 시도
+    
+    // 환경변수 설정
+    CONFIG_ENV_IS_IN_FLASH=y
+    CONFIG_ENV_ADDR=0x47F80000
+    CONFIG_ENV_SECT_SIZE=0x40000
+    ```
+    
+    다음은 기본 이더넷 설정으로, 이로인해 DHCp, TFTP를 시도한다
+    
+    ```c
+    CONFIG_SMC911X=y
+    CONFIG_SMC911X_32_BIT=y
+    ```
+    
+    ```c
+    CONFIG_BAUDRATE=38400
+    ```
+    
+    UART의 baudrate으로 표준으로는 보통 9600, 115200을 사용하므로, 이에 맞춘다
+    
+    이 파일 한 장에 담긴 정보:
+    
+    - 어떤 CPU? (ARM)
+    - 어떤 보드? (VEXPRESS_CA9X4)
+    - 메모리 어디서 시작? (0x60800000)
+    - DTS는? (vexpress-v2p-ca9)
+    - 자동 부팅 어떻게? (distro_bootcmd)
+    - 환경변수 어디에? (Flash, 0x47F80000)
+    - 이더넷 칩은? (SMC911x)
+    - UART 속도? (38400)
+    
+    - Flow
+        
+        ```c
+        sed -i 's/CONFIG_BAUDRATE=38400/CONFIG_BAUDRATE=115200/' .config
+        
+        i: 원본에 쓰기 (i없으면 그냥 변경값을 보여주기만 함)
+        s: 's/원본/바꿀 것/'
+        ```
+        
+        ```c
+        configs/vexpress_ca9x4_defconfig   ←  "원본 설계도" (Git에 저장됨)
+                                                 ↓ make defconfig 실행
+        .config                             ←  "실제 작업본" (빌드 시 사용됨)
+        ```
+        
+        으로 configs/vexpress_ca9x4_defconfig는 바꿔도 make를 하지 않으면 의미가 없다
+        
+    
+    ```c
+    cat board/armltd/vexpress/Makefile
+    cat board/armltd/vexpress/Kconfig
+    cat board/armltd/vexpress/vexpress_common.c
+    ```
+    
+    **Makefile**
+    
+    ⇒ .c파일을 .o파일로 변환
+    
+    **Kconfig**
+    
+    ```c
+    if TARGET_VEXPRESS_CA9X4    ← defconfig의 CONFIG_TARGET_VEXPRESS_CA9X4=y 와 연결
+    
+    config SYS_BOARD
+        default "vexpress"      ← board/ 아래 디렉토리 이름
+    
+    config SYS_VENDOR
+        default "armltd"        ← board/<여기>/ 디렉토리 이름
+    
+    config SYS_CONFIG_NAME
+        default "vexpress_ca9x4" ← include/configs/<여기>.h 파일 이름
+    
+    endif
+    ```
+    
+    ```c
+    SYS_VENDOR  = "mycompany"   → board/mycompany/
+    SYS_BOARD   = "myboard"     → board/mycompany/myboard/
+    SYS_CONFIG_NAME = "myboard" → include/configs/myboard.h
+    ```
+    
+    **vexpress_common**
+    
+    ⇒ init함수 모음
+    
+    이 세 파일이 모여서 다음과 같은 전체 흐름을 만든다
+    
+    ```c
+    defconfig
+        ↓ CONFIG_TARGET_VEXPRESS_CA9X4=y
+    Kconfig
+        ↓ SYS_VENDOR="armltd", SYS_BOARD="vexpress"
+    board/armltd/vexpress/
+        ↓ Makefile: vexpress_common.o 빌드
+    vexpress_common.c
+        ↓ board_init(), dram_init() 등 실행
+    보드 초기화 완료
+        ↓
+    U-Boot 쉘 (=>)
+    ```
+    
+    - 학습
+        
+        ![image.png](attachment:05f0afcd-d833-4498-94d6-a1ffba1a349a:image.png)
