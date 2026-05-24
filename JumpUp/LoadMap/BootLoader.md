@@ -1,5 +1,3 @@
-
-
 - bootloader?
     
     ## BootLoader?
@@ -1297,154 +1295,435 @@
             새 저장 장치를 인식하고 E 드라이브 폴더에 연결시키는 작업이다
             
     - u-boot 포팅
+        - 설정 파일 뜯어보기
+            
+            이제 새로운 HW를 인식시키는 포팅이라는 작업을 해보려 한다
+            
+            u-boot를 git clone했을 것이다.
+            
+            ```c
+            cat configs/vexpress_caa9x4_defconfig
+            ```
+            
+            실행 시 많은 정보들이 나올 것이다
+            
+            가장 위에
+            
+            ```c
+            CONFIG_ARM=y
+            CONFIG_TARGET_VEXPRESS_CA9X4=y
+            ```
+            
+            부터 내 보드에 맞게 설정한다
+            
+            ```c
+            CONFIG_TEXT_BASE=0x60800000 // DRAM 시작 + 8MB
+            CONFIG_CUSTOM_SYS_INIT_SP_ADDR=0x60000f10 // stack pointer addr
+            ```
+            
+            DRAM시작이 0x60000000이고, 여기서 8MB띄어서 지정한다. U-boot 실행 중 stack/heap으로 사용된다
+            
+            ```c
+            CONFIG_DEFAULT_DEVICE_TREE="vexpress-v2p-ca9"
+            CONFIG_DEFAULT_FDT_FILE="vexpress-v2p-ca9.dtb"
+            ```
+            
+            부팅 시 보드가 사용할 dts파일 이름이다
+            
+            ```c
+            CONFIG_SYS_LOAD_ADDR=0x90000000
+            ```
+            
+            u-boot의 기본 로드 주소이다
+            
+            다음은 bootcmd 관련 설정이다
+            
+            ```c
+            CONFIG_BOOTCOMMAND="run distro_bootcmd; run bootflash" // 환경변수 기존값
+            CONFIG_DISTRO_DEFAULTS=y // 기본 설정으로 MMC->USB0>PXE->DHCP 순서로 부팅 시도
+            
+            // 환경변수 설정
+            CONFIG_ENV_IS_IN_FLASH=y
+            CONFIG_ENV_ADDR=0x47F80000
+            CONFIG_ENV_SECT_SIZE=0x40000
+            ```
+            
+            다음은 기본 이더넷 설정으로, 이로인해 DHCp, TFTP를 시도한다
+            
+            ```c
+            CONFIG_SMC911X=y
+            CONFIG_SMC911X_32_BIT=y
+            ```
+            
+            ```c
+            CONFIG_BAUDRATE=38400
+            ```
+            
+            UART의 baudrate으로 표준으로는 보통 9600, 115200을 사용하므로, 이에 맞춘다
+            
+            이 파일 한 장에 담긴 정보:
+            
+            - 어떤 CPU? (ARM)
+            - 어떤 보드? (VEXPRESS_CA9X4)
+            - 메모리 어디서 시작? (0x60800000)
+            - DTS는? (vexpress-v2p-ca9)
+            - 자동 부팅 어떻게? (distro_bootcmd)
+            - 환경변수 어디에? (Flash, 0x47F80000)
+            - 이더넷 칩은? (SMC911x)
+            - UART 속도? (38400)
+            
+            - Flow
+                
+                ```c
+                sed -i 's/CONFIG_BAUDRATE=38400/CONFIG_BAUDRATE=115200/' .config
+                
+                i: 원본에 쓰기 (i없으면 그냥 변경값을 보여주기만 함)
+                s: 's/원본/바꿀 것/'
+                ```
+                
+                ```c
+                configs/vexpress_ca9x4_defconfig   ←  "원본 설계도" (Git에 저장됨)
+                                                         ↓ make defconfig 실행
+                .config                             ←  "실제 작업본" (빌드 시 사용됨)
+                ```
+                
+                으로 configs/vexpress_ca9x4_defconfig는 바꿔도 make를 하지 않으면 의미가 없다
+                
+            
+            ```c
+            cat board/armltd/vexpress/Makefile
+            cat board/armltd/vexpress/Kconfig
+            cat board/armltd/vexpress/vexpress_common.c
+            ```
+            
+            **Makefile**
+            
+            ⇒ .c파일을 .o파일로 변환
+            
+            **Kconfig**
+            
+            ```c
+            if TARGET_VEXPRESS_CA9X4    ← defconfig의 CONFIG_TARGET_VEXPRESS_CA9X4=y 와 연결
+            
+            config SYS_BOARD
+                default "vexpress"      ← board/ 아래 디렉토리 이름
+            
+            config SYS_VENDOR
+                default "armltd"        ← board/<여기>/ 디렉토리 이름
+            
+            config SYS_CONFIG_NAME
+                default "vexpress_ca9x4" ← include/configs/<여기>.h 파일 이름
+            
+            endif
+            ```
+            
+            ```c
+            SYS_VENDOR  = "mycompany"   → board/mycompany/
+            SYS_BOARD   = "myboard"     → board/mycompany/myboard/
+            SYS_CONFIG_NAME = "myboard" → include/configs/myboard.h
+            ```
+            
+            **vexpress_common**
+            
+            ⇒ init함수 모음
+            
+            이 세 파일이 모여서 다음과 같은 전체 흐름을 만든다
+            
+            ```c
+            defconfig
+                ↓ CONFIG_TARGET_VEXPRESS_CA9X4=y
+            Kconfig
+                ↓ SYS_VENDOR="armltd", SYS_BOARD="vexpress"
+            board/armltd/vexpress/
+                ↓ Makefile: vexpress_common.o 빌드
+            vexpress_common.c
+                ↓ board_init(), dram_init() 등 실행
+            보드 초기화 완료
+                ↓
+            U-Boot 쉘 (=>)
+            ```
+            
+            - 학습
+                
+                ![image.png](attachment:05f0afcd-d833-4498-94d6-a1ffba1a349a:image.png)
+                
         
-        이제 새로운 HW를 인식시키는 포팅이라는 작업을 해보려 한다
+        포팅, 이건 그냥 간단하다 새로운 HW를 등록하는 것
         
-        u-boot를 git clone했을 것이다.
+        u-boot/board/ ← 밑에 새 파일을 파서 새 보드를 추가할 것이다.
+        
+        ![image.png](attachment:b6b26cd8-3a88-4c96-9a9e-495cf1ae3478:image.png)
+        
+        지금 보면 mycompany/myboard 여기에 
+        
+        Kconfig, Makefile, myboard.c 이렇게 세 파일을 만들 것이다.
+        
+        - 파일 역할
+            - Kconfig
+                
+                : defconfig의 설정값과 실제 디렉토리 파일을 연결
+                
+                ![image.png](attachment:68d2c1ef-38a5-467d-84f5-c5e22618471f:image.png)
+                
+                아까 configs/vexpress_caa9x4_defconfig이 파일에사
+                
+                `CONFIG_TARGET_MYBOARD=y`  였으니까 이를 보고, TARGET_MYBOARD면, 어떤 디렉토리에 어떤걸 연결할지 지정한다
+                
+            - Makefile
+                
+                : 어느 파일을 컴파일 할 것인지
+                
+                ⇒ 어떤 파일을 .o 파일로 바꿀 것인지
+                
+            - myboard.c
+                
+                : 보드 초기화 코드
+                
+        - 현재 진행 사함
+            
+            ✅ configs/myboard_defconfig    (복사 완료)
+            ✅ board/mycompany/myboard/     (생성 완료)
+            ✅ Makefile 수정                (완료)
+            ✅ Kconfig 수정                 (완료)
+            ─────────────────────────────
+            ❌ defconfig에서 TARGET 수정    (아직)
+            ❌ include/configs/myboard.h    (아직 - 헤더 파일)
+            ❌ Kconfig 빌드 시스템 등록     (아직 - board/Kconfig에 추가)
+            ❌ 빌드 테스트                  (아직)
+            
         
         ```c
-        cat configs/vexpress_caa9x4_defconfig
+        configs/vexpress_ca9x4_defconfig <- 아까 여기 있는 파일을 우리가 확인했다. 여기에 각종 설정이 담겨 있었고
+        configs/myboard_defconfig <- 여기에 복사해서 이름을 바꿈 
         ```
         
-        실행 시 많은 정보들이 나올 것이다
-        
-        가장 위에
-        
-        ```c
-        CONFIG_ARM=y
-        CONFIG_TARGET_VEXPRESS_CA9X4=y
-        ```
-        
-        부터 내 보드에 맞게 설정한다
-        
-        ```c
-        CONFIG_TEXT_BASE=0x60800000 // DRAM 시작 + 8MB
-        CONFIG_CUSTOM_SYS_INIT_SP_ADDR=0x60000f10 // stack pointer addr
-        ```
-        
-        DRAM시작이 0x60000000이고, 여기서 8MB띄어서 지정한다. U-boot 실행 중 stack/heap으로 사용된다
-        
-    
-    ```c
-    CONFIG_DEFAULT_DEVICE_TREE="vexpress-v2p-ca9"
-    CONFIG_DEFAULT_FDT_FILE="vexpress-v2p-ca9.dtb"
-    ```
-    
-    부팅 시 보드가 사용할 dts파일 이름이다
-    
-    ```c
-    CONFIG_SYS_LOAD_ADDR=0x90000000
-    ```
-    
-    u-boot의 기본 로드 주소이다
-    
-    다음은 bootcmd 관련 설정이다
-    
-    ```c
-    CONFIG_BOOTCOMMAND="run distro_bootcmd; run bootflash" // 환경변수 기존값
-    CONFIG_DISTRO_DEFAULTS=y // 기본 설정으로 MMC->USB0>PXE->DHCP 순서로 부팅 시도
-    
-    // 환경변수 설정
-    CONFIG_ENV_IS_IN_FLASH=y
-    CONFIG_ENV_ADDR=0x47F80000
-    CONFIG_ENV_SECT_SIZE=0x40000
-    ```
-    
-    다음은 기본 이더넷 설정으로, 이로인해 DHCp, TFTP를 시도한다
-    
-    ```c
-    CONFIG_SMC911X=y
-    CONFIG_SMC911X_32_BIT=y
-    ```
-    
-    ```c
-    CONFIG_BAUDRATE=38400
-    ```
-    
-    UART의 baudrate으로 표준으로는 보통 9600, 115200을 사용하므로, 이에 맞춘다
-    
-    이 파일 한 장에 담긴 정보:
-    
-    - 어떤 CPU? (ARM)
-    - 어떤 보드? (VEXPRESS_CA9X4)
-    - 메모리 어디서 시작? (0x60800000)
-    - DTS는? (vexpress-v2p-ca9)
-    - 자동 부팅 어떻게? (distro_bootcmd)
-    - 환경변수 어디에? (Flash, 0x47F80000)
-    - 이더넷 칩은? (SMC911x)
-    - UART 속도? (38400)
-    
-    - Flow
-        
-        ```c
-        sed -i 's/CONFIG_BAUDRATE=38400/CONFIG_BAUDRATE=115200/' .config
-        
-        i: 원본에 쓰기 (i없으면 그냥 변경값을 보여주기만 함)
-        s: 's/원본/바꿀 것/'
-        ```
-        
-        ```c
-        configs/vexpress_ca9x4_defconfig   ←  "원본 설계도" (Git에 저장됨)
-                                                 ↓ make defconfig 실행
-        .config                             ←  "실제 작업본" (빌드 시 사용됨)
-        ```
-        
-        으로 configs/vexpress_ca9x4_defconfig는 바꿔도 make를 하지 않으면 의미가 없다
-        
-    
-    ```c
-    cat board/armltd/vexpress/Makefile
-    cat board/armltd/vexpress/Kconfig
-    cat board/armltd/vexpress/vexpress_common.c
-    ```
-    
-    **Makefile**
-    
-    ⇒ .c파일을 .o파일로 변환
-    
-    **Kconfig**
-    
-    ```c
-    if TARGET_VEXPRESS_CA9X4    ← defconfig의 CONFIG_TARGET_VEXPRESS_CA9X4=y 와 연결
-    
-    config SYS_BOARD
-        default "vexpress"      ← board/ 아래 디렉토리 이름
-    
-    config SYS_VENDOR
-        default "armltd"        ← board/<여기>/ 디렉토리 이름
-    
-    config SYS_CONFIG_NAME
-        default "vexpress_ca9x4" ← include/configs/<여기>.h 파일 이름
-    
-    endif
-    ```
-    
-    ```c
-    SYS_VENDOR  = "mycompany"   → board/mycompany/
-    SYS_BOARD   = "myboard"     → board/mycompany/myboard/
-    SYS_CONFIG_NAME = "myboard" → include/configs/myboard.h
-    ```
-    
-    **vexpress_common**
-    
-    ⇒ init함수 모음
-    
-    이 세 파일이 모여서 다음과 같은 전체 흐름을 만든다
-    
-    ```c
-    defconfig
-        ↓ CONFIG_TARGET_VEXPRESS_CA9X4=y
-    Kconfig
-        ↓ SYS_VENDOR="armltd", SYS_BOARD="vexpress"
-    board/armltd/vexpress/
-        ↓ Makefile: vexpress_common.o 빌드
-    vexpress_common.c
-        ↓ board_init(), dram_init() 등 실행
-    보드 초기화 완료
+        vexpress_ca9x4_defconfig를 복사해서 myboard_defconfig 만들고
         ↓
-    U-Boot 쉘 (=>)
+        TARGET을 MYBOARD로 바꿔서
+        ↓
+        "이제 myboard라는 보드를 빌드해"라고 선언한 것
+        
+        일단 이 단계는 포팅 단계 중 이름만 바꾼 것이다.
+        
+        이 다음에는 Kconfig 빌드 시스템을 등록해야한다
+        
+        u-boot가 board/mycompany/myboard/Kconfig를 매칭 시킬 수 있도록 해야한다
+        
+        ```c
+        cat board/mycompany/Kconfig 2>/dev/null || echo "파일 없음"
+        // 2>/dev/null 
+        // - 2: 표준 에러 (stderr) - 에러 메시지가 나오는 곳 (1은 일반 로그이다)
+        // - >: ~로 보내라는 의미
+        // - /dev/null: 리눅스에서 쓰레기통으로 쓰는 곳이다
+        // - || : 앞 명령이 실패하면 뒤 명령어 실행
+        ```
+        
+        여기 다 Kconfig를 만들어야한다
+        
+        ```c
+        board/mycompany/Kconfig          ← 지금 만들 것 (한 단계 위)
+        board/mycompany/myboard/Kconfig  ← 이미 있는 것
+        ```
+        
+        ![image.png](attachment:b84b4eff-c6e6-42f2-a191-36c8f7ec6556:image.png)
+        
+        /mycompany안에 Kconfig를 만들고 이 파일 안에, mycompany/myboard/Konfig로 연결한다
+        
+        mycompany의 Kconfig를 mycompany/myboard의 Kconfig에 연결했으니, 이제 이걸 u-boot 최상위 Kconfig가 mycompany/Kconfig를 인식하게 최종 Kconfig에 등록해야한다
+        
+        - 최상위 Kconfig → company Kconfig → company/myboard Kconfig 전부 연결
+        
+        ![image.png](attachment:7e032c17-8003-4c0f-ac6f-ccf6505a266d:image.png)
+        
+        - -r : 디렉토리를 뒤져보는 옵션
+        1. armltd를 키워드로 현재 어떤 설정인지 확인
+        2. -n옵션으로 행 넘버를 가져온다
+        3. sed -i를 통해 2422행 밑에 새 소스를 추가한다 
+            1. 2422a밑에 source “board/mycompany/Kconfig를 arch/arm/Kconfig에 추가
+        4. 2420부터 2426행까지 확인 다시 확인
+        
+        그 후 u-boot/include/configs/vexpress_common.h에 가보면 각종 설정 코드가 있다. 여기서 메모리 지정이나 부팅 순서를 볼 수 있고, 환경변수 설정도 있다. 
+        
+        이제 이걸 기반으로 myboard.h를 만들 것이다.
+        
+        이제 전부 설정 끝났다.
+        
+        실행해보자
+        
+        ```c
+        make myboard_defconfig
+        make -j$(nproc) 2>&1 | tail -20
+        ```
+        
+        - 실제 발생한 문제
+            
+            ![image.png](attachment:93528393-ac59-4bd1-8bb9-2277eca4b0a2:image.png)
+            
+            클로드를 쓰고 알았지만 x18은 64bits 레지스터이다. 하지만 우리는 32bits를 빌드하고 있다. 즉 myboard_defconfig가 vexpress_common.h을 호출한 파일이기 때문에, 여기에 64bits 관련 설정이 있던 것이다
+            
+            기존 QEMU 빌드 시 원래는 vexpress를 써서 했다. 하지만 이 포팅 과정으로 인하여 비록 vexpress에서 이름만 바뀌었지만,  myboard를 써서 빌드를 했다
+            
+    - DTS
+        
+        Device Tree는 HW정보를 C코드에서 분리해서 별도 텍스트 파일에 작성한 것이다.
+        예전에 귀찮에 하드코딩헀던 보드의 HW정보를 DTS에 써놓는 것이다.
+        
+        종류
+        
+        - .dts : source로 사람이 작성
+        - .dtb : binary로 커널에 전달
+        - DTS 문법
+            - 항상 첫 줄에 /dts-v1/ 버전을 명세한다
+            - 1, 노드 (Node)
+                
+                ```c
+                이름@주소 {
+                    프로퍼티들;
+                    자식노드들;
+                };
+                
+                // 주소는 선택사항이다, 같은 종류 디바이스가 여러 개일 때 구분용
+                cpu@0 { ... }   ← 0번 CPU
+                cpu@1 { ... }   ← 1번 CPU
+                uart@10009000   ← 주소 0x10009000의 UART
+                ```
+                
+            - 2, 프로퍼티 (Property)
+                
+                `키 = 값;`
+                
+                ```c
+                3가지 값의 종류
+                // 문자열
+                compatible = "arm,cortex-a9";
+                
+                // 32비트 정수 (꺾쇠 괄호)
+                reg = <0x60000000 0x10000000>;
+                interrupts = <0 44 4>;
+                
+                // 값 없음 (존재 자체가 의미)
+                interrupt-controller;
+                ```
+                
+            - 3, reg Property
+                
+                하드웨어 주소와 크기를 정의한다.
+                
+                ```c
+                reg = <시작주소 크기>;
+                
+                // 예시
+                memory@60000000 {
+                    reg = <0x60000000 0x10000000>;
+                    //     ↑시작주소    ↑크기(256MB)
+                };
+                
+                uart@10009000 {
+                    reg = <0x10009000 0x1000>;
+                    //     ↑UART주소   ↑크기(4KB)
+                };
+                ```
+                
+            - 4, compatible Property
+                
+                해당 HW가 특정 드라이버를 사용함을 선언
+                
+                ```c
+                compatible = "arm,cortex-a9";
+                //            ↑벤더  ↑칩 이름
+                
+                compatible = "arm,pl011", "arm,primecell";
+                //            ↑정확한 칩   ↑대체 드라이버 (없으면 이걸 씀)
+                // 앞에서부터 매칭 시도, 없으면 다음 것
+                ```
+                
+            - 5, 라벨 (Label)과 참조(&)
+                
+                ```c
+                gic: interrupt-controller@1e001000 {
+                //↑라벨
+                    ...
+                };
+                
+                timer@100e4000 {
+                    interrupt-parent = <&gic>;
+                    //                  ↑&라벨로 참조
+                };
+                ```
+                
+                - 라벨 : 이름
+                - 참조 : 포인터낌
+            
+            - dts: 특정 보드 전용
+            - dtsi: 여러 보드 공통 사용
+    
+    이제 dts를 써보겠다. 
+    
+    ```c
+    /embedded-linux-qemu-labs/kernel/linux/arch/arm/boot/dts/arm/myboard.dts
     ```
     
-    - 학습
+    다음 경로로 myboard를 만들겠다. 안에는 AI가 임의로 쓴 코드를 넣었다.
+    
+    ```c
+    cat arch/arm/boot/dts/arm/Makefile | grep vexpress
+    ```
+    
+    이번엔 Makefile의 vexpress를 확인해 보겠다. 이부분을 보면 여러 vexpress~~~.dts파일이 나올 것이다. 
+    
+    여기에 grep -n으로 줄 넘버를 얻고 sed -i를 사용하여 myboard를 등록한다
+    
+    ```c
+    sed -i '28a\\t\tmyboard.dtb \\' arch/arm/boot/dts/arm/Makefile
+    ```
+    
+    - vexpress
         
-        ![image.png](attachment:05f0afcd-d833-4498-94d6-a1ffba1a349a:image.png)
+        지금까지 당연하게 쓴 것이었다
+        
+        우리가 뭔가를 쓰려면, 사용하는 것이 무엇인지 알아야 한다.
+        
+        예를들어
+        
+        - QEMU: 가상 실행 환경
+        - busybox: 압축 명령어 박스
+        
+        이런식이다.
+        
+        vexpress는 ARM사에서 만든 개발/검증용 레퍼런스 보드 플랫폼이다. ARM사는 칩 설계 팹리스 회사이다. 여기서 사용할 가상 환경이 필요했고, 많은 CPU를 지원하며, QEMU가 에뮬레이션을 해주는 도구로 vexpress가 있기 때문에, 이를 사용한다
+        
+    
+    | 개념 | 내용 |
+    | --- | --- |
+    | `.dts` vs `.dtb` | 소스(텍스트) vs 바이너리 |
+    | `.dtsi` | 공통 하드웨어 정의, include용 |
+    | `model` | 부팅 로그에 출력되는 보드 이름 |
+    | `compatible` | 드라이버 매칭 기준 |
+    | `reg` | 하드웨어 주소와 크기 |
+    | `#include` | C 전처리기 필요, dtc 단독 불가 |
+    
+    지금까지 개발한 양상을 본다면 대부분 비슷한 방식이다.
+    
+    기존 코드 (스켈레톤) 받아오기 → 내 보드에 맞게 수정 (포팅) → 로직 짜기 → 등록 → ARCH, Cross Compile 설정 → make defconfig → QEMU 빌드
+    
+    ```c
+    // dts 부분 순서
+    기존 코드(스켈레톤) 받아오기
+        ↓
+    ARCH, CROSS_COMPILE 설정  ← 빌드 전에 항상 먼저
+        ↓
+    내 보드에 맞게 수정 (포팅)
+        ├─ defconfig 복사 → TARGET 수정
+        ├─ board/ 디렉토리 생성 → 초기화 코드 수정
+        ├─ Kconfig 작성 → 빌드 시스템에 등록
+        ├─ include/configs/ 헤더 작성
+        └─ DTS 작성 → 하드웨어 정의
+        ↓
+    make defconfig  ← 설정 적용
+        ↓
+    make 빌드
+        ↓
+    file [결과물]  ← ARM인지 검증 (필수)
+        ↓
+    QEMU로 테스트
+    ```
