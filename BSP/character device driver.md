@@ -286,3 +286,40 @@ copy_from_user(kbuf, buf, len) // 유저 → 커널 공간
         ```
         
         `echo`같은 명령어 입력 시 open → read → relese
+        
+- tips
+    
+    ```c
+    dmesh -W
+    ```
+    
+    다른 창에 해당 명령어 입력 시 dmesg를 계속 입력하지 않아도 실시간 로그를 볼 수 있다.
+    
+    https://elixir.bootlin.com/linux/v7.0.10/source/include/linux/fs.h#L1926
+    
+- mknod
+    
+    driver를 user space에서 사용할 수 있게 등록해야 한다.
+    이런 등록 명령어를 mknod라고 한다.
+    
+    - mknod : Make Node
+    - C : character
+    - b : block
+    
+    ```c
+    mknod [파일명] [타입] [Major] [Minor]
+    sudo mknod /dev/my_char_dev c 240 0
+    ```
+    
+- flow
+    1. my_driver.c를 make 하면 이미지파일 .ko가 생긴다.
+    2. .ko를 가지고 rootfs에 넣고 실행한다.
+    3. inmod 시 major 번호가 등록된다.
+    4. mknod는 driver등록이므로, 이 경로로 명령어를 실행한다
+    5. fops에 매칭된 함수가 호출된다.
+    
+    흐름은 꼭 지켜질 필요는 없다 (insmod와 mknod는 순서에 대한 상관관계가 없다.)
+    
+    ```c
+    cp .ko rootfs/ -> create cpio -> buildroot run -> insmod -> mknod -> enter instruction
+    ```
