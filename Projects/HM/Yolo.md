@@ -66,16 +66,44 @@ Yolo는 CNN 하나만을 기반으로 하지 않는다.
 <br>
 백본은 딥러닝 모델에서 Input data feature를 뽑아내는 네트워크이다.
 <br> 조금 더 설명을 해보겠다. <br><br>
+Layer에서 연산을 거친 이미가 Feature로 나오게 된다.
 
 우리는 CNN에서 이미지 객체를 한번에 "강아지!" 라고 분류하지 않는다.<br> 이미지가 Feature Map을 거치며, 점점 의미있는 숫자 표현으로 바뀌며 분류가 진행된다.<br><br>
 
 각 CNN Layer를 거치며 이미지를 저수준에서 고수준 분류까지 해낸다.  <br>첫 Layer는 선, 모서리를 분류한다면, 둘째 모서리는 질감, 패턴 등을 분류한다. <br><br> 이렇게 점점 고차원 분류를 진행한다.<br><br>
 
-결론적으로 백본은 여러 단계로 나뉜 Layer이다. <br> 
-저차원에서 고차원 분류를 위한 사이사이의 여러 Layer를 의미한다.
-<br> <br>  => Model의 여러 Layer의 모음
+이러한 Layer의 묶음을 Block이라고 칭한다. Block안에는 비슷한 구조의 Layer를 계속 사용하는데, 이 Layer 여러개를 묶은 것이다.<br><br>
 
+결론적으로 백본은 여러 단계로 나뉜 Layer/Block이다. <br> 
+저차원에서 고차원 분류를 위한 사이사이의 여러 Layer/Block을 의미한다.
+<br> <br>  => Model의 여러 Layer/Block의 모음
+<br>=> 이미지에서 Feature를 추출하는 부분 (Layer를 거쳐 Feature가 나오므로)
+</details>
+<details> <summary>Feature Fusion Neck</summary>  <br>
+ Backbone이 여러 단계에서 뽑아낸 Feature를 서로 합쳐서 Detection Head가 쓰기 좋은 형태로 만들어준다.<br><br>
+
+Backbone을 가지고 이미지에서 Feature를 추출하면, layer가 깊어지며 Feature Map이 생길 것이다.  <br> Feature Map : 각 Feature가 어디에 얼마나 위치하는지 나타냄 <br><br>
+
+문제는 Feature Map은 각기 다른 정보를 가진다. 그 까닭은 각 이미지의 Feature가 어디에 얼마나 존재하는지 Layer에 따라서 다르게 나올 것이기 때문이다.
+<br><br>
+
+Neck은 이것들을 Fusion시킨다. 대표적으로 다음 기법이 사용된다. <br>
+- FPN : 깊은 층의 의미 있는 Feature를 얕을 층으로 전달해 다양한 크기의 객체를 탐지하는 구조 <br>
+- PAN : 얕은 층의 위치 정보를 깊은 층으로 다시 전달해 Feature 정보를 더 잘 융합하는 구조 
 <br>
+<br>
+왜 Feature Map을 합쳐야할까?
+<br><br>
+- 깊은 Layer의 Feature : 자동차는 구분 가능, 하지만 위치는 모름<br>
+- 얕은 Layer의 Feature : 자동차는 구분 불가, 하지만 물체 위치는 인식
+<br> 이 두 정보를 합쳐 자동차의 위치를 알아내는 것이다.
+
+</details>
+<details> <summary>Detection Head</summary>  <br>
+이는 Neck에게 융합된 Feature를 받아서 최종적으로 어떤 객체가 어디에 있는지 예측한다.<br>
 </details>
 
-
+- BackBone : 특징 추출
+- Neck : 특징 융합
+- Head : 특징 예측
+이라고 볼 수 있다. 이러한 구조로 Yolo는 CNN이 불가능한 BBox를 통해 객체 데이터를 정형화할 수 있는 것이다.
