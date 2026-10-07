@@ -14,8 +14,7 @@
     
     <aside>
     
-    ![Uploading image.png…]()
-
+    <img width="853" height="367" alt="image" src="https://github.com/user-attachments/assets/ca2b02ee-0af6-4fb1-9ba4-f39b6baeebfe" />
     
     </aside>
     
