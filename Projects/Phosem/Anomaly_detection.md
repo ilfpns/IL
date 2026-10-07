@@ -14,7 +14,8 @@
     
     <aside>
     
-    !image.png
+    ![Uploading image.png…]()
+
     
     </aside>
     
