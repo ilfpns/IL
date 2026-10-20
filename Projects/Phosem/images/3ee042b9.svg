@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="192" viewBox="0 0 900 192" font-family="sans-serif"><rect width="900" height="192" fill="#ffffff"/>
+<text x="20" y="26" font-size="14" font-weight="600">학습 대상 구성 — 지표별 die 수 (중복 포함, B 제외 후 3,266장)</text>
+<text x="170" y="61" text-anchor="end" font-size="12">양품</text>
+<rect x="180" y="50" width="630.0" height="16" fill="#3b6fd4" rx="2"/>
+<text x="818.0" y="61" font-size="12" fill="#333">1,979</text>
+<text x="170" y="87" text-anchor="end" font-size="12">C 접합부</text>
+<rect x="180" y="76" width="299.9" height="16" fill="#3b6fd4" rx="2"/>
+<text x="487.9" y="87" font-size="12" fill="#333">942</text>
+<text x="170" y="113" text-anchor="end" font-size="12">P 이물질</text>
+<rect x="180" y="102" width="128.3" height="16" fill="#3b6fd4" rx="2"/>
+<text x="316.3" y="113" font-size="12" fill="#333">403</text>
+<text x="170" y="139" text-anchor="end" font-size="12">D</text>
+<rect x="180" y="128" width="54.4" height="16" fill="#3b6fd4" rx="2"/>
+<text x="242.4" y="139" font-size="12" fill="#333">171</text>
+<text x="170" y="165" text-anchor="end" font-size="12">S 스크래치</text>
+<rect x="180" y="154" width="20.7" height="16" fill="#3b6fd4" rx="2"/>
+<text x="208.7" y="165" font-size="12" fill="#333">65</text></svg>
